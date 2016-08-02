@@ -8,7 +8,7 @@ import (
 	"strings"
 )
 
-func KeyHasher(results chan *rsa.PrivateKey) {
+func KeyHasher(prefix string, results chan *rsa.PrivateKey) {
 	var bigOne = big.NewInt(1)
 
 	for {
@@ -40,7 +40,7 @@ func KeyHasher(results chan *rsa.PrivateKey) {
 		for e := E_MIN; e <= E_MAX; e += 2 {
 			key.E = e
 			name := OnionNameString(key)
-			if strings.HasPrefix(name, *prefix) {
+			if strings.HasPrefix(name, prefix) {
 				// Some code here (very roughly) based on FFP-0.0.8 rsa.c
 
 				// We have a match!  Now we recalculate D
