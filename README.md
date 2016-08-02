@@ -13,8 +13,10 @@ better understand the topic myself!).
 
     Usage of tamanegi:
       -c	continuously search for multiple matches
+      -n num
+        	quit after finding num matches (implies -c)
       -output directory
-        	write keys to filesystem directory *TODO*
+        	write keys to filesystem directory
       -p prefix
         	search for hashes matching prefix
       -t threads
