@@ -25,11 +25,12 @@ func KeyHasher(prefix string, results chan *rsa.PrivateKey) {
 		}
 
 		// Preset some variables outside of the inner loop, in order to avoid
-		// unncessary big.Int allocations.
+		// new big.Int allocations, which are somewhat expensive.
 		p, q := key.Primes[0], key.Primes[1]
 		p1 := new(big.Int).Sub(p, bigOne) // p - 1
 		q1 := new(big.Int).Sub(q, bigOne) // q - 1
 		r0 := new(big.Int).Mul(p1, q1)    // (p-1)(q-1)
+		bE := new(big.Int)                // placeholder for bigint copy of E
 
 		// Enumerate possibilities for the public exponent of the public key, and
 		// compute the onion hash for each and compare for a matching partial
@@ -45,7 +46,7 @@ func KeyHasher(prefix string, results chan *rsa.PrivateKey) {
 
 				// We have a match!  Now we recalculate D
 				//rsa->d = BN_mod_inverse(rsa->d, rsa->e, r0, ctx2);
-				bE := new(big.Int).SetInt64(int64(e))
+				bE.SetInt64(int64(e))
 				key.D.ModInverse(bE, r0)
 
 				// Force recalculate d mod (p-1) [dmp1] and d mod (q-1) [dmq1]
