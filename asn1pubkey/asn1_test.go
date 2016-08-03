@@ -1,4 +1,4 @@
-package main
+package asn1pubkey
 
 import (
 	"bytes"

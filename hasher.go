@@ -1,6 +1,7 @@
 package main
 
 import (
+	"bytes"
 	"crypto/rsa"
 	"fmt"
 	"math/big"
@@ -10,6 +11,7 @@ import (
 func KeyHasher(prefix string, results chan *rsa.PrivateKey, workerNum int) {
 	logPrefix := fmt.Sprintf("[Worker #%d]", workerNum)
 	var bigOne = big.NewInt(1)
+	var onionNameBuffer bytes.Buffer
 
 	for {
 		// Generate a new RSA keypair.
@@ -38,7 +40,7 @@ func KeyHasher(prefix string, results chan *rsa.PrivateKey, workerNum int) {
 		// collision. This method is known as "sloppy" key enumeration.
 		for e := E_MIN; e <= E_MAX; e += 2 {
 			key.E = e
-			name := OnionNameString(key)
+			name := OnionNameStringFast(&onionNameBuffer, key)
 			if strings.HasPrefix(name, prefix) {
 				// Some code here (very roughly) based on FFP-0.0.8 rsa.c
 

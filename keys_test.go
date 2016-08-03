@@ -1,6 +1,7 @@
 package main
 
 import (
+	"bytes"
 	"crypto/x509"
 	"encoding/pem"
 	"testing"
@@ -58,6 +59,14 @@ func BenchmarkComputeOnionHash(b *testing.B) {
 	}
 }
 
+func BenchmarkComputeOnionHashFast(b *testing.B) {
+	key, _ := NewKey()
+	var buf bytes.Buffer
+	for n := 0; n < b.N; n++ {
+		computeOnionHashFast(&buf, key)
+	}
+}
+
 func BenchmarkOnionNameBytes(b *testing.B) {
 	key, _ := NewKey()
 	for n := 0; n < b.N; n++ {
@@ -69,5 +78,13 @@ func BenchmarkOnionNameString(b *testing.B) {
 	key, _ := NewKey()
 	for n := 0; n < b.N; n++ {
 		OnionNameString(key)
+	}
+}
+
+func BenchmarkOnionNameStringFast(b *testing.B) {
+	key, _ := NewKey()
+	var buf bytes.Buffer
+	for n := 0; n < b.N; n++ {
+		OnionNameStringFast(&buf, key)
 	}
 }

@@ -1,13 +1,15 @@
 package main
 
 import (
+	"bytes"
 	"crypto/rand"
 	"crypto/rsa"
 	"crypto/sha1"
 	"crypto/x509"
-	"encoding/asn1"
 	"encoding/base32"
 	"encoding/pem"
+
+	"github.com/mroth/tamanegi/asn1pubkey"
 )
 
 const OnionSize = 10 // Onion name size in bytes (equal to `sha1.Size / 2`)
@@ -39,11 +41,33 @@ func OnionNameString(pk *rsa.PrivateKey) string {
 	return base32.StdEncoding.EncodeToString(hash)
 }
 
-// Compute the .onion hash for a given RSA key.
+// OnionNameStringFast is a base32 encoding of the .onion hash, as a string.
 //
-// This is the first half of the sha1Sum for the public key.
+// This is designed to remove extra buffer allocations when calling many times
+// in sequence, for optimum performance.
+func OnionNameStringFast(buf *bytes.Buffer, pk *rsa.PrivateKey) string {
+	hash := computeOnionHashFast(buf, pk)
+	return base32.StdEncoding.EncodeToString(hash)
+}
+
+// Compute the .onion hash for a given RSA key.
 func computeOnionHash(pk *rsa.PrivateKey) []byte {
-	pubASN1, err := asn1.Marshal(pk.PublicKey)
+	// pubASN1, err := asn1.Marshal(pk.PublicKey)
+	pubASN1, err := asn1pubkey.MarshalPubKey(pk.PublicKey)
+	if err != nil {
+		// TODO: check Err
+	}
+
+	sha := sha1.Sum(pubASN1)
+	return sha[:OnionSize]
+}
+
+// Compute the .onion hash for a given RSA key, recycling an existing buffer.
+//
+// This is designed to remove extra buffer allocations when calling many times
+// in sequence, for optimum performance.
+func computeOnionHashFast(buf *bytes.Buffer, pk *rsa.PrivateKey) []byte {
+	pubASN1, err := asn1pubkey.MarshalPubKeyFast(buf, pk.PublicKey)
 	if err != nil {
 		// TODO: check Err
 	}
