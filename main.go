@@ -33,7 +33,7 @@ func main() {
 	// start up the worker threads
 	results := make(chan *rsa.PrivateKey)
 	for t := 1; t <= *threads; t++ {
-		go KeyHasher(*prefix, results)
+		go KeyHasher(*prefix, results, t)
 	}
 
 	// here come the results!
@@ -53,7 +53,7 @@ func main() {
 			err := ioutil.WriteFile(filepath, pem, 0644)
 
 			if err == nil {
-				log.Println("Stored matching domain for", onionName+".onion")
+				log.Println("Saved matching domain for", onionName+".onion")
 			} else {
 				log.Fatal(err)
 			}

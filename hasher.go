@@ -3,12 +3,12 @@ package main
 import (
 	"crypto/rsa"
 	"fmt"
-	"log"
 	"math/big"
 	"strings"
 )
 
-func KeyHasher(prefix string, results chan *rsa.PrivateKey) {
+func KeyHasher(prefix string, results chan *rsa.PrivateKey, workerNum int) {
+	logPrefix := fmt.Sprintf("[Worker #%d]", workerNum)
 	var bigOne = big.NewInt(1)
 
 	for {
@@ -20,9 +20,10 @@ func KeyHasher(prefix string, results chan *rsa.PrivateKey) {
 		// succeeds.
 		key, err := NewKey()
 		for err != nil {
-			fmt.Println("Something went horribly wrong!") // TODO: log on verbose
+			DebugLogLn(logPrefix, "Key generation failed!")
 			key, err = NewKey()
 		}
+		DebugLogLn(logPrefix, "Generated new key, starting enumeration...")
 
 		// Preset some variables outside of the inner loop, in order to avoid
 		// new big.Int allocations, which are somewhat expensive.
@@ -62,9 +63,9 @@ func KeyHasher(prefix string, results chan *rsa.PrivateKey) {
 				// invalid even after we recalculate values.
 				verificationErr := key.Validate()
 				if verificationErr != nil {
-					log.Printf("match %s with e=%d has verification error: %s\n", name, e, verificationErr)
+					DebugLogF("%s found match %s (e=%d) / INVALID: %s\n", logPrefix, name, e, verificationErr)
 				} else {
-					log.Printf("match %s with e=%d is VERIFIED", name, e)
+					DebugLogF("%s found match %s (e=%d) / VERIFIED", logPrefix, name, e)
 					results <- key
 					break
 				}
