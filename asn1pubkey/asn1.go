@@ -1,3 +1,8 @@
+// Package asn1pubkey provides a asn.1 DER encoding for the crypto/rsa.PublicKey
+// struct, and that alone.
+//
+// By handling only that one case, we are able to avoid some of the overhead of
+// using the generic encoding/asn1 package.
 package asn1pubkey
 
 import (
@@ -14,16 +19,18 @@ var bigOne = big.NewInt(1)
 //         E int      // public exponent
 // }
 
-// Attempt to make a fast version of asn1.Marshal that avoids reflection and
-// heap allocation, by hardcoding it to work on just *rsa.PublicKey.
+// MarshalPubKey is a fast version of asn1.Marshal for rsa.PublicKey, which
+// is hardcoded to avoid reflection.
 func MarshalPubKey(pk rsa.PublicKey) ([]byte, error) {
 	var buf bytes.Buffer
 	return asn1EncodePubKey(&buf, pk)
 }
 
-// Attempt to make an even faster version, by avoiding allocation of a new
-// buffer on the heap. Requires a pre-allocated buffer to be passed for
-// re-use purposes.
+// MarshalPubKeyFast is an even faster version fo asn1.Marshal for rsa.PublicKey
+// for situations where it will be used many times in a hot inner loop.
+//
+// It requires passing a buffer object, so that the same buffer can be re-used
+// on every iteration, eliminating extra allocations and deallocations.
 func MarshalPubKeyFast(buf *bytes.Buffer, pk rsa.PublicKey) ([]byte, error) {
 	buf.Reset()
 	return asn1EncodePubKey(buf, pk)
@@ -35,14 +42,10 @@ func MarshalPubKeyFast(buf *bytes.Buffer, pk rsa.PublicKey) ([]byte, error) {
 func asn1EncodePubKey(buf *bytes.Buffer, pk rsa.PublicKey) ([]byte, error) {
 	var err error
 
-	// ASN.1 SEQUENCE,
-	buf.Write([]byte{0x30})
-	//  with 2 elements...
-	buf.Write([]byte{0x81, 0x89})
-	// an integer
-	buf.Write([]byte{0x2})
-	// ...length 128 bits
-	buf.Write([]byte{0x81, 0x81})
+	buf.Write([]byte{0x30})       // HERE COMES AN ASN.1 SEQUENCE,
+	buf.Write([]byte{0x81, 0x89}) // with 2 elements...
+	buf.Write([]byte{0x2})        // first an integer...
+	buf.Write([]byte{0x81, 0x81}) // ...of length 128 bits
 
 	// encode N
 	err = marshalBigInt(buf, pk.N)
@@ -50,10 +53,8 @@ func asn1EncodePubKey(buf *bytes.Buffer, pk rsa.PublicKey) ([]byte, error) {
 		return nil, err
 	}
 
-	// an integer
-	buf.Write([]byte{0x2})
-	// ...length 3 bits
-	buf.Write([]byte{0x3})
+	buf.Write([]byte{0x2}) // another integer...
+	buf.Write([]byte{0x3}) // ...of length 3 bits
 
 	// encode E
 	err = marshalInt64(buf, int64(pk.E))
