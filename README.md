@@ -6,8 +6,10 @@ Computes a valid Tor `.onion` hostname and `private_key` pair.
 Can brute force a specific prefix for the hostname hash if desired.
 
 Tamanegi not designed to be the most performant or featureful, but rather
-something with code that is easy to compile and understand (I am writing it to
+something with code that is easy to compile and understand (as I am only writing it to
 better understand the topic myself!).
+
+**This is an unfinished work in progress.**
 
 ## Usage
 
