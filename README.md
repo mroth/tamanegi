@@ -9,7 +9,7 @@ Tamanegi not designed to be the most performant or featureful, but rather
 something with code that is easy to compile and understand (as I am only writing it to
 better understand the topic myself!).
 
-**This is an unfinished work in progress.**
+**This is an unfinished (but functional) work in progress.**
 
 ## Usage
 
