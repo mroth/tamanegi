@@ -35,10 +35,7 @@ func KeyHasher(prefix string, results chan *rsa.PrivateKey, workerNum int) {
 
 		// Enumerate possibilities for the public exponent of the public key, and
 		// compute the onion hash for each and compare for a matching partial
-		// collision.
-		//
-		// This method is known as "sloppy" key enumeration, we could be more
-		// accurate by ***TODO write explanation
+		// collision. This method is known as "sloppy" key enumeration.
 		for e := E_MIN; e <= E_MAX; e += 2 {
 			key.E = e
 			name := OnionNameString(key)

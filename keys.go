@@ -43,7 +43,6 @@ func OnionNameString(pk *rsa.PrivateKey) string {
 //
 // This is the first half of the sha1Sum for the public key.
 func computeOnionHash(pk *rsa.PrivateKey) []byte {
-	// pubASN1, err := x509.MarshalPKIXPublicKey(*pk.PublicKey)
 	pubASN1, err := asn1.Marshal(pk.PublicKey)
 	if err != nil {
 		// TODO: check Err
@@ -55,7 +54,6 @@ func computeOnionHash(pk *rsa.PrivateKey) []byte {
 
 func encPrivKey(pk *rsa.PrivateKey) []byte {
 	privASN1 := x509.MarshalPKCS1PrivateKey(pk)
-	// privASN1, err := asn1.Marshal(&pk)
 	return pem.EncodeToMemory(
 		&pem.Block{
 			Type:    "RSA PRIVATE KEY",
